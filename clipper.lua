@@ -1,7 +1,23 @@
-local ffi = require'ffi'
-local C = ffi.load'clipper'
+local _PACKAGE = (...):match("^(.+)%.[^%.]+")
+local ffi = require('ffi')
+local path = love.filesystem.getSourceBaseDirectory() .. '/' .. _PACKAGE:gsub('%.', '/'):gsub('^%w+/', '')
 
-if not ... then require'clipper_demo'; return end
+local function binDir()
+	local arch = jit.arch:sub(2)
+	if jit.os == 'Windows' then return 'mingw' .. arch
+	elseif jit.os == 'OSX' then return 'osx' .. arch
+	elseif jit.os == 'Linux' then return 'linux' .. arch
+	end
+end
+
+local function binName()
+	if jit.os == 'Windows' then return 'clipper.dll'
+	elseif jit.os == 'OSX' then return 'libclipper.dylib'
+	elseif jit.os == 'Linux' then return 'libclipper.so'
+	end
+end
+
+local C = ffi.load(path .. '/bin/' .. binDir() .. '/' .. binName())
 
 ffi.cdef[[
 typedef struct clipper_point_st { int64_t x, y; } clipper_point;
